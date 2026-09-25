@@ -57,7 +57,7 @@ async function expireStale() {
   }
 }
 
-const PORT = process.env.PORT || 5000;
+const PORT = Number(process.env.PORT) || 5002;
 connectDB().then(async () => {
   server.listen(PORT, () => console.log(`API on http://localhost:${PORT}`));
   // resume dispatches that were in flight when the server stopped
