@@ -1,20 +1,67 @@
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const connectDB = require('./config/db');
-
-dotenv.config();
-connectDB();
+import 'dotenv/config';
+import express from 'express';
+import http from 'http';
+import cors from 'cors';
+import morgan from 'morgan';
+import jwt from 'jsonwebtoken';
+import { Server } from 'socket.io';
+import { connectDB } from './src/config/db.js';
+import { secret } from './src/middleware/auth.js';
+import { setIO, announce } from './src/services/notify.js';
+import { dispatch } from './src/services/dispatch.js';
+import { releaseSlot } from './src/services/matching.js';
+import Donation from './src/models/Donation.js';
+import auth from './src/routes/auth.js';
+import donations from './src/routes/donations.js';
+import shelters from './src/routes/shelters.js';
+import driver from './src/routes/driver.js';
+import impact from './src/routes/impact.js';
 
 const app = express();
+const server = http.createServer(app);
+const origin = process.env.CLIENT_URL || 'http://localhost:5173';
+const io = new Server(server, { cors: { origin } });
+setIO(io);
 
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+io.use((socket, next) => {
+  try { socket.data.userId = jwt.verify(socket.handshake.auth.token, secret()).id; next(); }
+  catch { next(new Error('unauthorized')); }
+});
+io.on('connection', (s) => s.join(`user:${s.data.userId}`));
 
-// Routes
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/donations', require('./routes/donorRoutes'));
+app.use(cors({ origin }));
+app.use(express.json({ limit: '6mb' }));
+app.use(morgan('dev'));
+app.use('/uploads', express.static('uploads'));
+
+app.get('/api/health', (_, res) => res.json({ ok: true }));
+app.use('/api/auth', auth);
+app.use('/api/donations', donations);
+app.use('/api/shelters', shelters);
+app.use('/api/driver', driver);
+app.use('/api/impact', impact);
+
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(err.status || 500).json({ message: err.name === 'CastError' ? 'Invalid id' : err.message || 'Server error' });
+});
+
+// Housekeeping: expire donations past their expiry time and free the reserved shelter slot
+async function expireStale() {
+  const stale = await Donation.find({ expiresAt: { $lt: new Date() }, status: { $in: ['submitted', 'matched', 'dispatching', 'accepted', 'at_donor'] } });
+  for (const d of stale) {
+    d.status = 'expired'; d.timeline.push({ status: 'expired', note: 'Expiry time passed before pickup' });
+    await d.save();
+    if (d.match?.shelter) await releaseSlot(d.match.shelter, d.weightKg);
+    await announce(d);
+  }
+}
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+connectDB().then(async () => {
+  server.listen(PORT, () => console.log(`API on http://localhost:${PORT}`));
+  // resume dispatches that were in flight when the server stopped
+  const pending = await Donation.find({ status: 'dispatching' });
+  pending.forEach((d) => dispatch(d._id, Math.max(1, d.dispatchAttempts)));
+  setInterval(() => expireStale().catch(console.error), 5 * 60 * 1000);
+}).catch((e) => { console.error('DB connection failed:', e.message); process.exit(1); });
