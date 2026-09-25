@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken';
 import { Server } from 'socket.io';
 import { connectDB } from './src/config/db.js';
 import { secret } from './src/middleware/auth.js';
+import { errorMiddleware } from './src/middleware/errorMiddleware.js';
 import { setIO, announce } from './src/services/notify.js';
 import { dispatch } from './src/services/dispatch.js';
 import { releaseSlot } from './src/services/matching.js';
@@ -17,6 +18,11 @@ import shelters from './src/routes/shelters.js';
 import driver from './src/routes/driver.js';
 import impact from './src/routes/impact.js';
 
+import dns from 'node:dns';
+
+// Enforce IPv4 DNS order and set reliable fallbacks
+dns.setDefaultResultOrder('ipv4first');
+dns.setServers(['8.8.8.8', '1.1.1.1']);
 const app = express();
 const server = http.createServer(app);
 const origin = process.env.CLIENT_URL || 'http://localhost:5173';
@@ -41,10 +47,8 @@ app.use('/api/shelters', shelters);
 app.use('/api/driver', driver);
 app.use('/api/impact', impact);
 
-app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(err.status || 500).json({ message: err.name === 'CastError' ? 'Invalid id' : err.message || 'Server error' });
-});
+// Error handling middleware (must be last)
+app.use(errorMiddleware);
 
 // Housekeeping: expire donations past their expiry time and free the reserved shelter slot
 async function expireStale() {

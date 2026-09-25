@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import Donation from '../models/Donation.js';
 import { FOOD_TYPES } from '../models/Shelter.js';
-import { protect, requireRole } from '../middleware/auth.js';
+import { authMiddleware as protect, requireRole } from '../middleware/authMiddleware.js';
+import { upload, uploadMemory } from '../middleware/uploadMiddleware.js';
 import { classifyImage } from '../services/classifier.js';
 import { matchDonation } from '../services/matching.js';
 import { dispatch } from '../services/dispatch.js';
@@ -12,14 +12,28 @@ import { announce } from '../services/notify.js';
 import { h } from '../utils/h.js';
 
 const r = Router();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 6e6 } });
 const UNIT_KG = { kg: 1, lb: 0.4536, g: 0.001, servings: 0.4, items: 0.5 };
 const populate = [{ path: 'match.shelter', select: 'name address location' }, { path: 'driver', select: 'name phone' }];
 
 // AI/CV classification (detects food type & estimated weight from a photo)
+// Uses disk storage so segment_density.py can access the file
 r.post('/classify', protect, requireRole('donor'), upload.single('photo'), h(async (req, res) => {
   if (!req.file) return res.status(400).json({ message: 'Attach a photo' });
-  res.json(await classifyImage(req.file.buffer, req.file.mimetype));
+  try {
+    const filePath = path.resolve(req.file.path || '');
+    const result = await classifyImage(filePath, req.file.mimetype);
+    // Clean up temporary file after classification
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+    res.json(result);
+  } catch (error) {
+    // Clean up on error
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    throw error;
+  }
 }));
 
 // Run matching (+ dispatch on success) and persist the outcome
@@ -47,10 +61,9 @@ r.post('/', protect, requireRole('donor'), upload.single('photo'), h(async (req,
 
   let photoUrl;
   if (req.file) {
-    fs.mkdirSync('uploads', { recursive: true });
-    const name = `${Date.now()}-${req.file.originalname.replace(/[^\w.]/g, '_')}`;
-    fs.writeFileSync(path.join('uploads', name), req.file.buffer);
-    photoUrl = `/uploads/${name}`;
+    // File already saved by uploadMiddleware to uploads directory
+    const fileName = path.basename(req.file.path);
+    photoUrl = `/uploads/${fileName}`;
   }
   const d = await Donation.create({
     donor: req.user._id, itemName: b.itemName, foodType: b.foodType, quantity: b.quantity,
