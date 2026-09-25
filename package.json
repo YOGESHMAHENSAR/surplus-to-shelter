@@ -2,6 +2,7 @@
   "name": "surplus-to-shelter",
   "private": true,
   "scripts": {
+    "start": "npm run dev",
     "install:all": "npm install && npm install --prefix server && npm install --prefix client",
     "seed": "npm run seed --prefix server",
     "vision": "cd vision-service && python -m uvicorn main:app --port 8000",
