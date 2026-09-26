@@ -5,7 +5,7 @@ import path from 'path';
 import Donation from '../models/Donation.js';
 import { FOOD_TYPES } from '../models/Shelter.js';
 import { protect, requireRole } from '../middleware/auth.js';
-import { authMiddleware as protect, requireRole } from '../middleware/authMiddleware.js';
+// import { authMiddleware as protect, requireRole } from '../middleware/authMiddleware.js';
 import { upload, uploadMemory } from '../middleware/uploadMiddleware.js';
 import { classifyImage } from '../services/classifier.js';
 import { matchDonation } from '../services/matching.js';
@@ -14,7 +14,7 @@ import { announce } from '../services/notify.js';
 import { h } from '../utils/h.js';
 
 const r = Router();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 6e6 } });
+// const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 6e6 } });
 const UNIT_KG = { kg: 1, lb: 0.4536, g: 0.001, servings: 0.4, items: 0.5 };
 const populate = [{ path: 'match.shelter', select: 'name address location' }, { path: 'driver', select: 'name phone' }];
 
