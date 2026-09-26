@@ -1,12 +1,8 @@
 import axios from 'axios';
 
-const normalizeApiBase = (value = '') => {
-  const trimmed = value.trim().replace(/\/+$/, '');
-  if (!trimmed) return 'http://localhost:5002/api';
-  return trimmed.replace(/^(https?:\/\/)+/i, (match) => match.startsWith('https://') ? 'https://' : 'http://');
-};
-
-const apiBase = normalizeApiBase(import.meta.env.VITE_API_URL || 'http://localhost:5002/api');
+// Replace the URL below with your EXACT Render backend URL
+const BACKEND_URL = 'https://surplus-to-shelter-3vhr.onrender.com';
+const apiBase = `${BACKEND_URL}/api`;
 
 export const api = axios.create({ baseURL: apiBase });
 
