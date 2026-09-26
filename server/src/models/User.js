@@ -10,6 +10,11 @@ const s = new mongoose.Schema({
   address: String,
   orgName: String,
   location: { lat: Number, lng: Number },
+  // Validation / proof documents
+  fssaiCert: String,
+  ngoCert: String,
+  driverLicense: String,
+  verificationProof: String,
   // driver-only
   vehicleCapacityKg: { type: Number, default: 50 },
   isAvailable: { type: Boolean, default: false },

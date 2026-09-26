@@ -1,20 +1,20 @@
 import axios from 'axios';
-
-// Replace the URL below with your EXACT Render backend URL
-const BACKEND_URL = 'https://surplus-to-shelter-3vhr.onrender.com';
-const apiBase = `${BACKEND_URL}/api`;
-
-export const api = axios.create({ baseURL: apiBase });
-
+export const api = axios.create({ baseURL: '/api' });
 api.interceptors.request.use((c) => {
   const t = localStorage.getItem('token');
   if (t) c.headers.Authorization = `Bearer ${t}`;
   return c;
 });
-
 export const errMsg = (e) => e.response?.data?.message || e.message;
+export const toFormData = (values) => {
+  const data = new FormData();
+  for (const [key, value] of Object.entries(values)) {
+    if (value === undefined || value === null) continue;
+    data.append(key, value instanceof Blob ? value : typeof value === 'object' ? JSON.stringify(value) : String(value));
+  }
+  return data;
+};
 export const FOOD_TYPES = ['cooked', 'produce', 'bakery', 'dairy', 'meat', 'packaged', 'beverages', 'other'];
 export const DEFAULT_LOC = { lat: 26.9124, lng: 75.7873 }; // Jaipur
-
 export const getPosition = () => new Promise((res, rej) =>
   navigator.geolocation ? navigator.geolocation.getCurrentPosition((p) => res({ lat: +p.coords.latitude.toFixed(5), lng: +p.coords.longitude.toFixed(5) }), () => rej(new Error('Location permission denied'))) : rej(new Error('Geolocation unavailable')));

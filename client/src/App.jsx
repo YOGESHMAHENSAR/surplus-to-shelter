@@ -7,6 +7,7 @@ import PostDonation from './pages/PostDonation.jsx';
 import ShelterDashboard from './pages/ShelterDashboard.jsx';
 import DriverDashboard from './pages/DriverDashboard.jsx';
 import Impact from './pages/Impact.jsx';
+import Profile from './pages/Profile.jsx';
 
 const HOME = { donor: '/donor', shelter: '/shelter', driver: '/driver', admin: '/impact' };
 
@@ -34,6 +35,7 @@ export default function App() {
         <Route path="/shelter" element={<Guard role={['shelter']}><ShelterDashboard /></Guard>} />
         <Route path="/driver" element={<Guard role={['driver']}><DriverDashboard /></Guard>} />
         <Route path="/impact" element={<Impact />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>);
