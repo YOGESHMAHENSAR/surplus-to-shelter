@@ -6,6 +6,14 @@ api.interceptors.request.use((c) => {
   return c;
 });
 export const errMsg = (e) => e.response?.data?.message || e.message;
+export const toFormData = (values) => {
+  const data = new FormData();
+  for (const [key, value] of Object.entries(values)) {
+    if (value === undefined || value === null) continue;
+    data.append(key, value instanceof Blob ? value : typeof value === 'object' ? JSON.stringify(value) : String(value));
+  }
+  return data;
+};
 export const FOOD_TYPES = ['cooked', 'produce', 'bakery', 'dairy', 'meat', 'packaged', 'beverages', 'other'];
 export const DEFAULT_LOC = { lat: 26.9124, lng: 75.7873 }; // Jaipur
 export const getPosition = () => new Promise((res, rej) =>

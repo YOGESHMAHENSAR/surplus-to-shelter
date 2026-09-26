@@ -350,13 +350,23 @@ legend {
 
 .grid2 {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 0 16px;
+}
+
+.grid2 > * {
+  min-width: 0;
+}
+
+.grid2 input:not([type='checkbox']):not([type='radio']),
+.grid2 select {
+  width: 100%;
+  min-width: 0;
 }
 
 @media (max-width: 640px) {
   .grid2 {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .who em {
     display: none;

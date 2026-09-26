@@ -19,6 +19,7 @@ import driver from './src/routes/driver.js';
 import impact from './src/routes/impact.js';
 
 import dns from 'node:dns';
+import { fileURLToPath } from 'node:url';
 
 // Enforce IPv4 DNS order and set reliable fallbacks
 dns.setDefaultResultOrder('ipv4first');
@@ -38,7 +39,13 @@ io.on('connection', (s) => s.join(`user:${s.data.userId}`));
 app.use(cors({ origin }));
 app.use(express.json({ limit: '6mb' }));
 app.use(morgan('dev'));
-app.use('/uploads', express.static('uploads'));
+// Identity documents are only accessible through the authenticated auth route.
+app.use('/uploads/documents', (_, res) => res.sendStatus(404));
+app.get('/uploads/:filename', (req, res) => {
+  const { filename } = req.params;
+  if (!/^[\w.-]+$/.test(filename) || filename.startsWith('.')) return res.sendStatus(404);
+  res.sendFile(filename, { root: fileURLToPath(new URL('./uploads/', import.meta.url)) });
+});
 
 app.get('/api/health', (_, res) => res.json({ ok: true }));
 app.use('/api/auth', auth);

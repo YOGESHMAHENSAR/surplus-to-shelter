@@ -4,3 +4,4 @@ dist
 server/uploads/*
 !server/uploads/.gitkeep
 .idea
+server/mobile_sam.pt

@@ -19,7 +19,7 @@ export default function PostDonation() {
     const [err, setErr] = useState('');
     const [result, setResult] = useState(null);
     const [f, setF] = useState({
-        itemName: '', foodType: 'cooked', quantity: '', weight: '', unit: 'kg',
+        itemName: '', foodType: 'cooked', quantity: '1', weight: '', unit: 'kg',
         pickupAddress: user.address || '', pickupLat: user.location?.lat ?? 26.9124, pickupLng: user.location?.lng ?? 75.7873,
         expiresAt: toLocal(new Date(Date.now() + 6 * 36e5)),
     });

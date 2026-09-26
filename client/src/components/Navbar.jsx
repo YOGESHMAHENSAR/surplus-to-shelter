@@ -30,10 +30,19 @@ export default function Navbar() {
             {t}
           </NavLink>
         ))}
+        <NavLink to="/profile" end>
+          Profile
+        </NavLink>
       </nav>
       <div className="who">
-        <span>{user.orgName || user.name}</span>
-        <em>{ROLE_ICONS[user.role] || user.role}</em>
+        <NavLink
+          to="/profile"
+          style={{ textDecoration: 'none', color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+          title="View profile and verification documents"
+        >
+          <span>{user.orgName || user.name}</span>
+          <em>{ROLE_ICONS[user.role] || user.role}</em>
+        </NavLink>
         <button className="ghost" onClick={logout} title="Sign out of account">
           Sign out
         </button>
