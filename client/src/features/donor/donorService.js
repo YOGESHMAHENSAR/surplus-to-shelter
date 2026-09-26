@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = '/api/donations';
+const API_URL = `${import.meta.env.API_URL || ''}/api/donations`;
 
 export const createDonation = async (formData, token) => {
     const config = {

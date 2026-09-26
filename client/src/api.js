@@ -1,5 +1,7 @@
 import axios from 'axios';
-export const api = axios.create({ baseURL: '/api' });
+
+const apiBase = import.meta.env.API_URL || '/api';
+export const api = axios.create({ baseURL: apiBase });
 api.interceptors.request.use((c) => {
   const t = localStorage.getItem('token');
   if (t) c.headers.Authorization = `Bearer ${t}`;
