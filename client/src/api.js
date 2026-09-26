@@ -1,7 +1,12 @@
 import axios from 'axios';
 
-// Vite requires the VITE_ prefix. Provide your Render backend URL as the fallback:
-const apiBase = import.meta.env.VITE_API_URL || 'https://https://surplus-to-shelter-3vhr.onrender.com/api';
+const normalizeApiBase = (value = '') => {
+  const trimmed = value.trim().replace(/\/+$/, '');
+  if (!trimmed) return 'http://localhost:5002/api';
+  return trimmed.replace(/^(https?:\/\/)+/i, (match) => match.startsWith('https://') ? 'https://' : 'http://');
+};
+
+const apiBase = normalizeApiBase(import.meta.env.VITE_API_URL || 'http://localhost:5002/api');
 
 export const api = axios.create({ baseURL: apiBase });
 
