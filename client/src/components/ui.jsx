@@ -52,27 +52,16 @@ export function Progress({ status }) {
   const at = RANK[status] ?? 0;
   return (
     <ol className="progress" aria-label="Donation progress">
-<<<<<<< HEAD
-      {STEPS.map((s, i) => <li key={s} className={i < at ? 'done' : i === at ? 'now' : ''}>{s}</li>)}
-=======
       {STEPS.map((s, i) => (
         <li key={s.key} className={i < at ? 'done' : i === at ? 'now' : ''}>
           {i < at ? `✓ ${s.label}` : s.label}
         </li>
       ))}
->>>>>>> 1c2890ff09ab70b1c1cf457c22fa8e4a93f834bd
     </ol>
   );
 }
 
-<<<<<<< HEAD
 export const Empty = ({ children }) => <p className="empty">{children}</p>;
-export const Stat = ({ value, unit, name }) => (
-  <div className="stat"><div className="stat-v">{value}<small>{unit}</small></div><div className="stat-n">{name}</div></div>
-);
-export const fmtDate = (d) => new Date(d).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
-=======
-export const Empty = ({ children }) => <div className="empty">{children}</div>;
 
 export const Stat = ({ value, unit, name }) => (
   <div className="stat">
@@ -86,4 +75,3 @@ export const Stat = ({ value, unit, name }) => (
 
 export const fmtDate = (d) =>
   new Date(d).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
->>>>>>> 1c2890ff09ab70b1c1cf457c22fa8e4a93f834bd
