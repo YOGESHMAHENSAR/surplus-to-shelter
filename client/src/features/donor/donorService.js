@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = `${import.meta.env.API_URL || ''}/api/donations`;
+const VITE_API_URL = `${import.meta.env.VITE_API_URL || ''}/api/donations`;
 
 export const createDonation = async (formData, token) => {
     const config = {
@@ -10,6 +10,6 @@ export const createDonation = async (formData, token) => {
         },
     };
 
-    const response = await axios.post(API_URL, formData, config);
+    const response = await axios.post(VITE_API_URL, formData, config);
     return response.data;
 };
